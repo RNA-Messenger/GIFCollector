@@ -3,8 +3,7 @@ const app = express();
 const MongoClient = require("mongodb").MongoClient;
 const mongodb = require("mongodb");
 
-const mongoConnectionString =
-  "mongodb+srv://anrubisse:iE87YVnGPIxFKTwl@cluster0.oga3fu7.mongodb.net/?retryWrites=true&w=majority";
+const mongoConnectionString = "uri";
 
 app.set("view engine", "ejs");
 app.use(express.static("public"));
