@@ -1,6 +1,7 @@
 const messageDiv = document.querySelector("#message");
 
 const deleteGif = (objID) => {
+  console.log(objID);
   fetch(`/deleteGifs/${objID}`, {
     method: "delete",
     headers: {
@@ -13,9 +14,10 @@ const deleteGif = (objID) => {
     .then((response) => {
       if (response === "GIF not found") {
         messageDiv.textContent = "GIF not found";
-      } else {
-        window.location.reload(true);
       }
+      // else {
+      //   window.location.reload(true);
+      // }
     })
     .catch((error) => console.log(error));
 };

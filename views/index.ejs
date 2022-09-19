@@ -7,33 +7,33 @@
 <body>
   <h1> GIF Collection </h1>
   <p> You never know when this might come in handy. </p>
-  <form action="/uploadGif" method="POST">
-    <!-- <label for="tag"> Tag it so you can quickly get it when you need it! </label> -->
-    <!-- <input type="text" id="tag" name="tag" /> -->
+  <form action="/uploadGif" method="POST" enctype="multipart/form-data">
+    <label for="tag"> Tag it so you can quickly get it when you need it! </label>
+    <input type="text" id="tag" name="tag" />
     <label for="file"> Upload gif here </label>
-    <!-- <input type="url" id='gifURL' name="url" /> -->
-    <input type="file" id="file" name="file" accept="image/*">
+    <input type="file" id="file" name="file">
 
     <button type="submit">Save GIF</button>
   </form>
   <div>
     <div id="message"></div>
 
+  <% if(gifs.length > 0){ %>
     <div class="gifs">
       <h2>Your GIF List</h2>
-      <ul class="gifs__list">
       <% for(var i = 0; i < gifs.length; i++) {%>
         <li class="gifs__item">
-        <span> <%=gifs[i].tag %></span>
-        <span> <%=gifs[i].url %></span>
+          <img src="http://localhost:5000/gifs/<%= gifs[i].filename%>" alt="alt">
+
+        <span> <%=gifs[i].filename %></span>
         <i class="delete-gif" onclick="deleteGif(`<%=gifs[i]._id %>`)">Delete</i>
-        <i class="edit-gif" onclick="editGif(`<%=gifs[i].url %>`)">Edit</i>
-        <i class="copy-gif" onclick="copyUrlFromGif(`<%=gifs[i].url %>`)">Copy</i>
+        <i class="copy-gif" onclick="copyUrlFromGif(`<%=gifs[i].filename %>`)">Copy</i>
         </li>
       <% } %>
-      </ul>
-    </div>
   </div>
+  <% } else { %>
+    <p>No files to show</p>
+    <% } %>
 
   <script src="/main.js"></script>
 
