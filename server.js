@@ -1,54 +1,134 @@
-const express = require("express");
-const app = express();
-const MongoClient = require("mongodb").MongoClient;
-const mongodb = require("mongodb");
+const dotenv = require("dotenv");
+const path = require("path");
 
-const mongoConnectionString = "uri";
+const express = require("express");
+const mongodb = require("mongodb");
+const mongoose = require("mongoose");
+
+const multer = require("multer");
+const GridFsStorage = require("multer-gridfs-storage");
+const GridFsStream = require("gridfs-stream");
+
+const methodOverride = require("method-override");
+
+const app = express();
+dotenv.config();
+
+//@helper
+//@desc sets tags from filename to quickly find gif
+app.locals.setTag = (filename) => {
+  const tag = filename.split("|");
+  return tag[0];
+};
+
+//@helper
+//@desc sets gif url from filename for image src
+app.locals.setImgUrl = (filename) => {
+  return `http://localhost:5000/gifs/${filename}`;
+};
+
+//mongoDB creds ===>
+//add the mongo uri from ATLAS in the ENV FILE
+const mongoURI = process.env.MONGO_URI;
+
+//setting general server data
+const port = process.env.PORT;
+let gfs;
 
 app.set("view engine", "ejs");
-app.use(express.static("public"));
+app.use(express.static(path.join(__dirname + "/public")));
+app.use(express.json());
+app.use(methodOverride("_method"));
 
-app.listen(5000, () => {
-  console.log("listening on port 5000");
+app.listen(port, () => {
+  console.log(`listening on port ${port}`);
 });
 
-MongoClient.connect(mongoConnectionString)
-  .then((client) => {
-    console.log("Database successful connection");
-    const db = client.db("GifList");
-    const gifCollection = db.collection("gifs");
+//connecting to mngoDB instance
+const connection = mongoose.createConnection(
+  mongoURI,
+  {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  },
+  (err) => {
+    if (err) console.log(err);
+    else console.log("mongdb is connected");
+  }
+);
 
-    app.use(express.urlencoded({ extended: true }));
+connection.once("open", () => {
+  gfs = GridFsStream(connection.db, mongoose.mongo);
+  gfs.collection("gifs");
+});
 
-    app.get("/", (req, res) => {
-      gifCollection
-        .find()
-        .toArray()
-        .then((results) => {
-          res.render("index.ejs", { gifs: results });
-        })
-        .catch((err) => console.error(err));
+//initializing GridFs storage to serve to multer middleware
+const storage = new GridFsStorage({
+  db: connection,
+  file: (req, file) => {
+    return new Promise((resolve, reject) => {
+      const fileInfo = {
+        filename: req.body.tag + "|" + Date.now(),
+        bucketName: "gifs",
+      };
+      resolve(fileInfo);
     });
+  },
+});
 
-    app.post("/uploadGif", (req, res) => {
-      gifCollection
-        .insertOne(req.body)
-        .then((result) => {
-          res.redirect("/");
-        })
-        .catch((err) => console.error(err));
-    });
+const upload = multer({ storage });
 
-    app.delete("/deleteGifs/:id", (req, res) => {
-      gifCollection
-        .deleteOne({ _id: mongodb.ObjectId(req.params.id) })
-        .then((result) => {
-          if (result.deletedCount === 0) {
-            return res.json("GIF not found");
-          }
-          res.json("Deleted GIF");
-        })
-        .catch((err) => console.error(err));
-    });
-  })
-  .catch((err) => console.error(err));
+//CRUD API ====>
+
+// @route GET
+// @desc Loads all
+app.get("/", (req, res) => {
+  gfs
+    .collection("gifs")
+    .find()
+    .toArray()
+    .then((results) => {
+      res.render("index.ejs", { gifs: results });
+    })
+    .catch((err) => console.error(err));
+});
+
+// @route POST /uploadGif
+// @desc uploads gif by one to collection
+app.post("/uploadGif", upload.single("file"), (req, res) => {
+  res.redirect("/");
+});
+
+// @route GET /gifs/:gifname
+// @desc display gif name, this is useful to allow individual gif visualization
+app.get("/gifs/:filename", (req, res) => {
+  gfs.files.findOne({ filename: req.params.filename }, (err, file) => {
+    if (!file) {
+      return res.status(404).json({
+        err: "No file exists",
+      });
+    }
+    if (file.contentType === "image/gif") {
+      const readstream = gfs.createReadStream(file.filename);
+      readstream.pipe(res);
+    } else {
+      res.status(404).json({
+        err: "This gif doesn't exist",
+      });
+    }
+  });
+});
+
+// @route DELETE /gifs/:id
+// @desc  Delete gif if no longer pertinent for the collection
+app.delete("/deleteGifs/:id", (req, res) => {
+  gfs.remove(
+    { _id: mongodb.ObjectId(req.params.id), root: "gifs" },
+    (err, gridStore) => {
+      if (err) {
+        return res.status(404).json({ err: err });
+      }
+      res.redirect("/");
+    }
+  );
+});

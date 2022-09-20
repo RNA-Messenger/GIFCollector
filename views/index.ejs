@@ -3,37 +3,57 @@
 <head>
   <meta charset="UTF-8">
   <title>My GIF Collection</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed&display=swap" rel="stylesheet">
+  <link rel="stylesheet" type="text/css" href="styles.css">
 </head>
 <body>
-  <h1> GIF Collection </h1>
-  <p> You never know when this might come in handy. </p>
-  <form action="/uploadGif" method="POST">
-    <label for="tag"> Tag it so you can quickly get it when you need it! </label>
-    <input type="text" id="tag" name="tag" />
-    <label for="gifURL"> Paste the GIF URL here: </label>
-    <input type="url" id='gifURL' name="url" />
-    <input type="file" id="file" name="file" accept="image/*">
+  <header>
+    <h1> GIF Collection </h1>
+    <p> Here you can stash all your GIFS. If you are a little bit like me, GIFS is a very important part of your day to day communication.<br> Organise them here, you never know when this might come in handy!! </p>
+  </header>
+  <main>
+    <form class="form" action="/uploadGif" method="POST" enctype="multipart/form-data">
+      <div class="form__field">
+        <label for="tag"> Create a tag for your GIF: </label>
+        <input type="text" id="tag" name="tag" />
+      </div>
+      <div class="form__field">
+        <label for="file"> Upload your GIF: </label>
+        <input type="file" id="file" name="file">
+      </div>
+      <button type="submit">Save GIF</button>
+    </form>
+    <div>  
+      <div class="gifs">
+        <h2>Your GIF List</h2>
 
-    <button type="submit">Save GIF</button>
-  </form>
-  <div>
-    <div id="message"></div>
-
-    <div class="gifs">
-      <h2>Your GIF List</h2>
-      <ul class="gifs__list">
-      <% for(var i = 0; i < gifs.length; i++) {%>
-        <li class="gifs__item">
-        <span> <%=gifs[i].tag %></span>
-        <span> <%=gifs[i].url %></span>
-        <i class="delete-gif" onclick="deleteGif(`<%=gifs[i]._id %>`)">Delete</i>
-        <i class="edit-gif" onclick="editGif(`<%=gifs[i].url %>`)">Edit</i>
-        <i class="copy-gif" onclick="copyUrlFromGif(`<%=gifs[i].url %>`)">Copy</i>
-        </li>
-      <% } %>
+    <% if(gifs.length > 0){ %>
+        <ul class="gifs__list">
+        <% for(var i = 0; i < gifs.length; i++) {%>
+          <li class="gifs__item">
+            <div class="gifs__img-wrapper">
+              <img id="<%=gifs[i]._id%>" class="gifs__img"src="<%-setImgUrl( gifs[i].filename)%>" alt="<%- setTag(gifs[i].filename) %>">
+            </div>
+          <div class="gifs__actions">
+            <span class="gifs__action"># <%- setTag(gifs[i].filename) %></span>
+            <button class="gifs__action" onclick="copyGifUrl(`<%= gifs[i]._id %>`)">Copy</button>
+            <a class="gifs__action" href="<%-setImgUrl( gifs[i].filename)%>" alt="<%- setTag(gifs[i].filename) %>" target="_blank" rel="noopener noreferrer">View</a>
+            <form method="POST" action="/deleteGifs/<%=gifs[i]._id %>?_method=DELETE">
+              <button class="gifs__action">Trash</button>
+            </form>
+          </div>
+          </li>
+        <% } %>
       </ul>
+    <% } else { %>
+      <p class="gifs__no-gif-msg">No files to show, go ahead and upload some GIFs :) </p>
+      <% } %>
     </div>
-  </div>
+
+  </main>
+  
 
   <script src="/main.js"></script>
 
