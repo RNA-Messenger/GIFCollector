@@ -1,29 +1,52 @@
+const dotenv = require("dotenv");
+const path = require("path");
+
 const express = require("express");
-const app = express();
-const MongoClient = require("mongodb").MongoClient;
 const mongodb = require("mongodb");
 const mongoose = require("mongoose");
+
 const multer = require("multer");
 const GridFsStorage = require("multer-gridfs-storage");
 const GridFsStream = require("gridfs-stream");
-const crypto = require("crypto");
-const path = require("path");
 
-const port = 5000;
+const methodOverride = require("method-override");
+
+const app = express();
+dotenv.config();
+
+//@helper
+//@desc sets tags from filename to quickly find gif
+app.locals.setTag = (filename) => {
+  const tag = filename.split("|");
+  return tag[0];
+};
+
+//@helper
+//@desc sets gif url from filename for image src
+app.locals.setImgUrl = (filename) => {
+  return `http://localhost:5000/gifs/${filename}`;
+};
+
+//mongoDB creds ===>
+//add the mongo uri from ATLAS in the ENV FILE
+const mongoURI = process.env.MONGO_URI;
+
+//setting general server data
+const port = process.env.PORT;
 let gfs;
-const mongoConnectionString =
-  "mongodb+srv://anrubisse:iE87YVnGPIxFKTwl@cluster0.oga3fu7.mongodb.net/GifList";
 
 app.set("view engine", "ejs");
-app.use(express.static("public"));
+app.use(express.static(path.join(__dirname + "/public")));
 app.use(express.json());
+app.use(methodOverride("_method"));
 
 app.listen(port, () => {
   console.log(`listening on port ${port}`);
 });
 
+//connecting to mngoDB instance
 const connection = mongoose.createConnection(
-  mongoConnectionString,
+  mongoURI,
   {
     useNewUrlParser: true,
     useUnifiedTopology: true,
@@ -39,21 +62,23 @@ connection.once("open", () => {
   gfs.collection("gifs");
 });
 
+//initializing GridFs storage to serve to multer middleware
 const storage = new GridFsStorage({
   db: connection,
   file: (req, file) => {
     return new Promise((resolve, reject) => {
       const fileInfo = {
         filename: req.body.tag + "|" + Date.now(),
-        // tag: req.body.tag,
         bucketName: "gifs",
       };
-      console.log(fileInfo);
       resolve(fileInfo);
     });
   },
 });
+
 const upload = multer({ storage });
+
+//CRUD API ====>
 
 // @route GET
 // @desc Loads all
@@ -63,7 +88,6 @@ app.get("/", (req, res) => {
     .find()
     .toArray()
     .then((results) => {
-      console.log(results);
       res.render("index.ejs", { gifs: results });
     })
     .catch((err) => console.error(err));
@@ -76,7 +100,7 @@ app.post("/uploadGif", upload.single("file"), (req, res) => {
 });
 
 // @route GET /gifs/:gifname
-// @desc display gif name
+// @desc display gif name, this is useful to allow individual gif visualization
 app.get("/gifs/:filename", (req, res) => {
   gfs.files.findOne({ filename: req.params.filename }, (err, file) => {
     if (!file) {
@@ -84,7 +108,6 @@ app.get("/gifs/:filename", (req, res) => {
         err: "No file exists",
       });
     }
-    // console.log(contentType);
     if (file.contentType === "image/gif") {
       const readstream = gfs.createReadStream(file.filename);
       readstream.pipe(res);
@@ -99,14 +122,13 @@ app.get("/gifs/:filename", (req, res) => {
 // @route DELETE /gifs/:id
 // @desc  Delete gif if no longer pertinent for the collection
 app.delete("/deleteGifs/:id", (req, res) => {
-  console.log(req.params.id);
   gfs.remove(
     { _id: mongodb.ObjectId(req.params.id), root: "gifs" },
     (err, gridStore) => {
       if (err) {
         return res.status(404).json({ err: err });
       }
-      // res.redirect("/");
+      res.redirect("/");
     }
   );
 });

@@ -1,0 +1,146 @@
+
+body{
+  background-color: #faf0f4;
+  color: #565656;
+  font-family: 'Roboto Condensed', sans-serif;
+  overflow-y: hidden;
+}
+
+header, main{
+  max-width: 980px;
+  min-width: 300px;
+  margin: 0 auto;
+}
+
+main{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+h1, h2{
+  color:#CCC3F2;
+  font-size: 40px;
+}
+
+p, label {
+  font-family: 'Roboto', sans-serif;
+  color: #ff918f;
+}
+
+label{
+  margin-bottom: 4px;
+}
+
+.form{
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100%;
+  height: auto;
+  max-height: 300px;
+  max-width: 260px;
+  margin-top: 70px;
+  margin-right: 30px;
+  padding-top: 10px;
+  padding-left: 10px;
+  border-top: 1px solid #FFD6D2;
+  border-left: 1px solid #FFD6D2;
+}
+
+.form__field{
+  display: block;
+  margin: 8px auto;
+}
+
+input{
+  border: 1px solid #FFC5C4;
+  padding: 8px 15px;
+  width: 100%;
+}
+
+input[type="file"]{
+  max-width: 260px;
+}
+
+.gifs{
+  width: 100%;
+  max-width: 630px;
+  margin-left: 30px;
+}
+
+.gifs h2 {
+  width: 100%;
+  text-align: center;
+  font-size: 26px;
+}
+
+.gifs__list{
+  background-color: #F4E0E8;
+  width: 100%;
+  height: 600px;
+  margin: 15px auto;
+  padding: 15px 0;
+  list-style: none;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  align-items: flex-start;
+  overflow-y: scroll;
+}
+
+.gifs__item{
+  width: 200px;
+  height: 200px;
+  padding: 8px;
+  margin: 8px;
+  background-color: #C2DAFE;
+  border-radius: 15px;
+}
+
+.gifs__img-wrapper{
+  max-width: 200px;
+  max-height: 140px;
+  overflow: hidden;
+}
+
+.gifs__img{
+  width: 100%;
+  height: auto;
+}
+
+.gifs__actions{
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-items: baseline;
+}
+
+.gifs__action{
+  border: 2px solid #F4E0E8;
+  margin: 0 4px;
+  font-size: 14px;
+  background-color: #FFC5C4;
+  color: #565656;
+  text-decoration: none;
+  cursor: pointer;
+  font-family: 'Roboto Condensed', sans-serif;
+  padding: 4px;
+}
+
+.gifs__actions span{
+  display: block;
+  width: 100%;
+  background-color: unset;
+  border: unset;
+}
+
+.gifs__no-gif-msg{
+  margin: auto;
+  padding: 40px 20px;
+  border: 1px solid;
+  text-align: center;
+}
