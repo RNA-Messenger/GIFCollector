@@ -1,5 +1,8 @@
 # RUBI's GIF Collection
 
+![image](https://user-images.githubusercontent.com/54856927/191141964-2b06f352-fff3-41db-8341-fc6b229f24ff.png)
+
+
 Create a [Mongo Atlas](https://www.mongodb.com/docs/atlas/tutorial/create-atlas-account/) account. It's free and quite quick. Once you have an account, set a cluster and copy the URI it will provide to the .env file. You can use the env.example file on the repo.
 Then, clone the repo and install all the needed dependencies:
 
